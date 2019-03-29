@@ -1,13 +1,15 @@
 import mysql.connector
+import time
 
+start = time.time()
 connection = mysql.connector.connect(user='cmpsc431', password='mysql1234', host='127.0.0.1', database='431whw6')
 
 cur = connection.cursor(buffered=True, dictionary=True)
 
 #cleans up the database afterwards
-cur.execute("DROP TABLE `works`")
-cur.execute("DROP TABLE `emp`, `dept`")
-connection.commit()
+#cur.execute("DROP TABLE works")
+#cur.execute("DROP TABLE emp, dept")
+#connection.commit()
 
 #create try/except block
 cur.execute("CREATE TABLE emp ( eid int(11) NOT NULL, ename text CHARACTER SET utf8 NOT NULL, age int(11) NOT NULL, salary int(11) NOT NULL, PRIMARY KEY (eid)) ENGINE = InnoDB")
@@ -54,11 +56,12 @@ connection.commit()
 
 
 
+print("")
 
 # Question 1
 # search through each did to find an eid that matches the age
-# nested join to collect max age from each did, then join to find the eid with that age in that department
-cur.execute("SELECT w2.did, e2.eid, e2.ename, e2.age, e2.salary FROM emp e2 LEFT OUTER JOIN Works w2 USING (eid) JOIN (SELECT w.did, MAX(e.age) AS Oldest FROM works w INNER JOIN emp e USING (eid) GROUP BY w.did) old ON w2.did = old.did and e2.age = old.Oldest ORDER BY `w2`.`did` ASC")
+# nested join to collect max age from each did, using group by aggregate. Then join with works table and emp to fetch the name and salary associated with each did age.
+cur.execute("SELECT w2.did, e2.eid, e2.ename, e2.age, e2.salary FROM emp e2 LEFT OUTER JOIN Works w2 USING (eid) JOIN (SELECT w.did, MAX(e.age) AS Oldest FROM works w INNER JOIN emp e USING (eid) GROUP BY w.did) old ON w2.did = old.did and e2.age = old.Oldest ORDER BY w2.did ASC")
 print("Question #1")
 for (did) in cur:
     print(did)
@@ -116,3 +119,5 @@ connection.commit()
 
 cur.close()
 connection.close()
+end = time.time()
+print("Runtime: %.5f seconds" % float(end-start))
